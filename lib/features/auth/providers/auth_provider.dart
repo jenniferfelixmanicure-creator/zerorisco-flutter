@@ -34,30 +34,41 @@ class AuthProvider extends ChangeNotifier {
   bool get isDriver => _mode == 'driver';
 
   Future<void> initialize() async {
-    final session = _authService.currentSession;
-    if (session == null) {
+    try {
+      final session = _authService.currentSession;
+      if (session == null) {
+        _state = AuthState.unauthenticated;
+        notifyListeners();
+        return;
+      }
+
+      _token = session.accessToken;
+      _apiService.setToken(_token);
+
+      // Timeout de 5 segundos para buscar o perfil, caso o Supabase demore a responder
+      final user = await _authService.fetchProfile().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => throw Exception('Timeout ao carregar perfil'),
+      );
+      
+      if (user == null) {
+        _state = AuthState.unauthenticated;
+        notifyListeners();
+        return;
+      }
+
+      _user = user;
+      _socketService.connect(_token!);
+
+      final savedMode = await _authService.getMode();
+      _mode = savedMode;
+      _state = _resolveState(savedMode);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Erro na inicialização: $e');
       _state = AuthState.unauthenticated;
       notifyListeners();
-      return;
     }
-
-    _token = session.accessToken;
-    _apiService.setToken(_token);
-
-    final user = await _authService.fetchProfile();
-    if (user == null) {
-      _state = AuthState.unauthenticated;
-      notifyListeners();
-      return;
-    }
-
-    _user = user;
-    _socketService.connect(_token!);
-
-    final savedMode = await _authService.getMode();
-    _mode = savedMode;
-    _state = _resolveState(savedMode);
-    notifyListeners();
   }
 
   AuthState _resolveState(String? mode) {
