@@ -114,7 +114,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   border: Border.all(color: AppColors.border),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
                     ),
                   ],
@@ -142,7 +142,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
                     color: isOnline
-                        ? AppColors.success.withValues(alpha: 0.15)
+                        ? AppColors.success.withOpacity(0.15)
                         : AppColors.surface,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
@@ -150,7 +150,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.3),
+                        color: Colors.black.withOpacity(0.3),
                         blurRadius: 8,
                       ),
                     ],
@@ -187,7 +187,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   border: Border.all(color: AppColors.border),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
+                      color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
                     ),
                   ],
@@ -230,7 +230,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 height: 72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.textMuted.withValues(alpha: 0.1),
+                  color: AppColors.textMuted.withOpacity(0.1),
                   border: Border.all(color: AppColors.border, width: 2),
                 ),
                 child: Icon(
@@ -433,7 +433,7 @@ class _RequestOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: Container(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: Colors.black.withOpacity(0.6),
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -504,10 +504,10 @@ class _RequestCardState extends State<_RequestCard>
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5),
+          border: Border.all(color: AppColors.primary.withOpacity(0.4), width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.2),
+              color: AppColors.primary.withOpacity(0.2),
               blurRadius: 24,
               spreadRadius: 2,
             ),
@@ -636,7 +636,7 @@ class _RequestCardState extends State<_RequestCard>
                           onPressed: widget.onAccept,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.success,
-                            shadowColor: AppColors.success.withValues(alpha: 0.4),
+                            shadowColor: AppColors.success.withOpacity(0.4),
                             elevation: 8,
                           ),
                           child: const Text('Aceitar corrida'),
@@ -735,10 +735,10 @@ class _PulsingDotState extends State<_PulsingDot>
         height: 16 + _anim.value * 4,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: AppColors.success.withValues(alpha: 0.7 + _anim.value * 0.3),
+          color: AppColors.success.withOpacity(0.7 + _anim.value * 0.3),
           boxShadow: [
             BoxShadow(
-              color: AppColors.success.withValues(alpha: 0.4),
+              color: AppColors.success.withOpacity(0.4),
               blurRadius: 12 + _anim.value * 8,
               spreadRadius: _anim.value * 4,
             ),
@@ -808,9 +808,9 @@ class _PinCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.1),
+        color: AppColors.warning.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
       ),
       child: Row(
         children: [

@@ -92,7 +92,7 @@ class _SosButtonState extends State<SosButton>
                           color: AppColors.error,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.error.withValues(alpha: 0.5),
+                              color: AppColors.error.withOpacity(0.5),
                               blurRadius: 16,
                               spreadRadius: 2,
                             ),
@@ -121,7 +121,7 @@ class _SosButtonState extends State<SosButton>
                             value: _progressAnim.value,
                             strokeWidth: 3,
                             valueColor: const AlwaysStoppedAnimation(Colors.white),
-                            backgroundColor: Colors.white.withValues(alpha: 0.2),
+                            backgroundColor: Colors.white.withOpacity(0.2),
                           ),
                         ),
                     ],
@@ -191,7 +191,7 @@ class _SOSDialog extends StatelessWidget {
             Text(
               'Alerta enviado para a central. Selecione o serviço de emergência:',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.7),
+                color: Colors.white.withOpacity(0.7),
                 fontSize: 14,
               ),
             ),

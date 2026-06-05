@@ -47,13 +47,13 @@ class DriverProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
                 color: user?.isApproved == true
-                    ? AppColors.success.withValues(alpha: 0.15)
-                    : AppColors.warning.withValues(alpha: 0.15),
+                    ? AppColors.success.withOpacity(0.15)
+                    : AppColors.warning.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: user?.isApproved == true
-                      ? AppColors.success.withValues(alpha: 0.4)
-                      : AppColors.warning.withValues(alpha: 0.4),
+                      ? AppColors.success.withOpacity(0.4)
+                      : AppColors.warning.withOpacity(0.4),
                 ),
               ),
               child: Text(
@@ -128,7 +128,7 @@ class DriverProfileScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.4),
+            color: AppColors.primary.withOpacity(0.4),
             blurRadius: 20,
             spreadRadius: 2,
           ),

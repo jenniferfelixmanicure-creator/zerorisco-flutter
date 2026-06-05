@@ -90,7 +90,7 @@ class _RideChatWidgetState extends State<RideChatWidget> {
             height: 36,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: AppColors.primary.withOpacity(0.15),
             ),
             child: const Icon(Icons.chat_rounded, color: AppColors.primary, size: 18),
           ),
@@ -207,7 +207,7 @@ class _RideChatWidgetState extends State<RideChatWidget> {
                   color: AppColors.primary,
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.4),
+                      color: AppColors.primary.withOpacity(0.4),
                       blurRadius: 12,
                     ),
                   ],
@@ -240,7 +240,7 @@ class _ChatBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isMe
-              ? AppColors.primary.withValues(alpha: 0.2)
+              ? AppColors.primary.withOpacity(0.2)
               : AppColors.card,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(18),
@@ -250,7 +250,7 @@ class _ChatBubble extends StatelessWidget {
           ),
           border: Border.all(
             color: isMe
-                ? AppColors.primary.withValues(alpha: 0.3)
+                ? AppColors.primary.withOpacity(0.3)
                 : AppColors.border,
             width: 1,
           ),

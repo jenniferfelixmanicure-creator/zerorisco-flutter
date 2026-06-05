@@ -90,12 +90,12 @@ class _ModeCard extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: gradient.map((c) => c.withValues(alpha: 0.15)).toList(),
+            colors: gradient.map((c) => c.withOpacity(0.15)).toList(),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: gradient.first.withValues(alpha: 0.4), width: 1.5),
+          border: Border.all(color: gradient.first.withOpacity(0.4), width: 1.5),
         ),
         child: Row(
           children: [
@@ -111,7 +111,7 @@ class _ModeCard extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: gradient.first.withValues(alpha: 0.4),
+                    color: gradient.first.withOpacity(0.4),
                     blurRadius: 16,
                     spreadRadius: 2,
                   ),

@@ -32,9 +32,6 @@ android {
             minifyEnabled false
             shrinkResources false
         }
-        debug {
-            applicationIdSuffix ".debug"
-        }
     }
 }
 

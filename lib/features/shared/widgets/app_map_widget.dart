@@ -112,7 +112,7 @@ class _Dot extends StatelessWidget {
         border: Border.all(color: Colors.white, width: 2.5),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.5),
+            color: color.withOpacity(0.5),
             blurRadius: 8,
             spreadRadius: 1,
           ),
@@ -145,7 +145,7 @@ class _DriverMarker extends StatelessWidget {
         border: Border.all(color: AppColors.primary, width: 2),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.4),
+            color: AppColors.primary.withOpacity(0.4),
             blurRadius: 12,
             spreadRadius: 2,
           ),

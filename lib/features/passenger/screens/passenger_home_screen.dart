@@ -100,7 +100,7 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.border),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8)],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
                 ),
                 child: Text(
                   'ZeroRisco',
@@ -126,7 +126,7 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 8)],
       ),
       child: IconButton(
         icon: Icon(icon, color: Colors.white),
@@ -482,7 +482,7 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
       height: 50,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.primary.withValues(alpha: 0.2),
+        color: AppColors.primary.withOpacity(0.2),
         border: Border.all(color: AppColors.primary, width: 1.5),
       ),
       child: Center(
@@ -497,9 +497,9 @@ class _PassengerHomeScreenState extends State<PassengerHomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: AppColors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
       ),
       child: Text(
         plate.toUpperCase(),
@@ -654,7 +654,7 @@ class _RideTypeCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : AppColors.card,
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.card,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -668,7 +668,7 @@ class _RideTypeCard extends StatelessWidget {
               height: 42,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: (isSelected ? AppColors.primary : AppColors.textMuted).withValues(alpha: 0.12),
+                color: (isSelected ? AppColors.primary : AppColors.textMuted).withOpacity(0.12),
               ),
               child: Icon(
                 _icon,
@@ -714,9 +714,9 @@ class _PinCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.warning.withValues(alpha: 0.08),
+        color: AppColors.warning.withOpacity(0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -799,7 +799,7 @@ class _PulseRingState extends State<_PulseRing> with TickerProviderStateMixin {
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.12),
+              color: AppColors.primary.withOpacity(0.12),
               border: Border.all(color: AppColors.primary, width: 2),
             ),
             child: const Icon(Icons.search_rounded, color: AppColors.primary, size: 22),

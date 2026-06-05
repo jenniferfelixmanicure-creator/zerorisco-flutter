@@ -73,11 +73,11 @@ class _SplashScreenState extends State<SplashScreen>
                           shape: BoxShape.circle,
                           gradient: SweepGradient(
                             colors: [
-                              AppColors.primary.withValues(alpha: 0),
-                              AppColors.primary.withValues(alpha: 0.3),
+                              AppColors.primary.withOpacity(0),
+                              AppColors.primary.withOpacity(0.3),
                               AppColors.primary,
-                              AppColors.primary.withValues(alpha: 0.3),
-                              AppColors.primary.withValues(alpha: 0),
+                              AppColors.primary.withOpacity(0.3),
+                              AppColors.primary.withOpacity(0),
                             ],
                           ),
                         ),
@@ -97,14 +97,14 @@ class _SplashScreenState extends State<SplashScreen>
                           height: 96,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.primary.withValues(alpha: 0.15),
+                            color: AppColors.primary.withOpacity(0.15),
                             border: Border.all(
                               color: AppColors.primary,
                               width: 2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.4),
+                                color: AppColors.primary.withOpacity(0.4),
                                 blurRadius: 24,
                                 spreadRadius: 4,
                               ),
