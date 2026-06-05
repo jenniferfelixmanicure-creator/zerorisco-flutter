@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../shared/widgets/neon_widgets.dart';
 import '../providers/auth_provider.dart';
-import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -37,12 +37,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await context.read<AuthProvider>().register(
-        _nameCtrl.text.trim(),
-        _emailCtrl.text.trim(),
-        _phoneCtrl.text.trim(),
-        _passCtrl.text,
-        _role,
-      );
+            _nameCtrl.text.trim(),
+            _emailCtrl.text.trim(),
+            _phoneCtrl.text.trim(),
+            _passCtrl.text,
+            _role,
+          );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +50,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             content: Text(e.toString()),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -65,7 +66,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: const Color(0xFF04090F),
       body: Stack(
         children: [
-          const _CircuitBackground(),
+          const CircuitBackground(),
           SafeArea(
             child: Column(
               children: [
@@ -85,9 +86,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               letterSpacing: 0.5,
                             ),
                             children: [
-                              TextSpan(text: 'Criar conta\n', style: TextStyle(color: Colors.white)),
-                              TextSpan(text: 'Zero', style: TextStyle(color: Colors.white)),
-                              TextSpan(text: 'Risco', style: TextStyle(color: Color(0xFF00B4FF))),
+                              TextSpan(
+                                  text: 'Criar conta\n',
+                                  style: TextStyle(color: Colors.white)),
+                              TextSpan(
+                                  text: 'Zero',
+                                  style: TextStyle(color: Colors.white)),
+                              TextSpan(
+                                  text: 'Risco',
+                                  style: TextStyle(color: Color(0xFF00B4FF))),
                             ],
                           ),
                         ),
@@ -95,7 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Text(
                           'Preencha os dados para se cadastrar',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.45),
+                            color: Colors.white.withOpacity(0.45),
                             fontSize: 13,
                           ),
                         ),
@@ -109,47 +116,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             children: [
                               _label('NOME COMPLETO'),
                               const SizedBox(height: 6),
-                              _NeonField(
+                              NeonField(
                                 controller: _nameCtrl,
                                 hint: 'Seu nome completo',
                                 icon: Icons.person_outline_rounded,
                                 textInputAction: TextInputAction.next,
-                                validator: (v) => (v == null || v.trim().isEmpty)
-                                    ? 'Informe seu nome'
-                                    : null,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Informe seu nome'
+                                        : null,
                               ),
                               const SizedBox(height: 18),
                               _label('E-MAIL'),
                               const SizedBox(height: 6),
-                              _NeonField(
+                              NeonField(
                                 controller: _emailCtrl,
                                 hint: 'seu@email.com',
                                 icon: Icons.mail_outline_rounded,
                                 keyboardType: TextInputType.emailAddress,
                                 textInputAction: TextInputAction.next,
                                 validator: (v) {
-                                  if (v == null || v.isEmpty) return 'Informe o e-mail';
-                                  if (!RegExp(r'.+@.+\..+').hasMatch(v)) return 'E-mail inválido';
+                                  if (v == null || v.isEmpty) {
+                                    return 'Informe o e-mail';
+                                  }
+                                  if (!RegExp(r'.+@.+\..+').hasMatch(v)) {
+                                    return 'E-mail inválido';
+                                  }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: 18),
                               _label('TELEFONE'),
                               const SizedBox(height: 6),
-                              _NeonField(
+                              NeonField(
                                 controller: _phoneCtrl,
                                 hint: '(22) 99999-9999',
                                 icon: Icons.phone_outlined,
                                 keyboardType: TextInputType.phone,
                                 textInputAction: TextInputAction.next,
-                                validator: (v) => (v == null || v.trim().isEmpty)
-                                    ? 'Informe o telefone'
-                                    : null,
+                                validator: (v) =>
+                                    (v == null || v.trim().isEmpty)
+                                        ? 'Informe o telefone'
+                                        : null,
                               ),
                               const SizedBox(height: 18),
                               _label('SENHA'),
                               const SizedBox(height: 6),
-                              _NeonField(
+                              NeonField(
                                 controller: _passCtrl,
                                 hint: 'Mínimo 6 caracteres',
                                 icon: Icons.lock_outline_rounded,
@@ -157,16 +170,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => _submit(),
                                 suffixIcon: GestureDetector(
-                                  onTap: () => setState(() => _obscure = !_obscure),
+                                  onTap: () =>
+                                      setState(() => _obscure = !_obscure),
                                   child: Icon(
-                                    _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                                    _obscure
+                                        ? Icons.visibility_outlined
+                                        : Icons.visibility_off_outlined,
                                     color: const Color(0xFF00B4FF),
                                     size: 20,
                                   ),
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty) return 'Informe a senha';
-                                  if (v.length < 6) return 'Mínimo 6 caracteres';
+                                  if (v == null || v.isEmpty) {
+                                    return 'Informe a senha';
+                                  }
+                                  if (v.length < 6) {
+                                    return 'Mínimo 6 caracteres';
+                                  }
                                   return null;
                                 },
                               ),
@@ -174,7 +194,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const SizedBox(height: 28),
-                        _NeonButton(
+                        NeonButton(
                           label: 'CADASTRAR',
                           loading: _loading,
                           onTap: _loading ? null : _submit,
@@ -189,7 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   TextSpan(
                                     text: 'Já tem conta?  ',
                                     style: TextStyle(
-                                      color: Colors.white.withValues(alpha: 0.5),
+                                      color: Colors.white.withOpacity(0.5),
                                       fontSize: 14,
                                     ),
                                   ),
@@ -233,10 +253,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 color: const Color(0xFF07121E),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFF00B4FF).withValues(alpha: 0.35),
+                  color: const Color(0xFF00B4FF).withOpacity(0.35),
                 ),
               ),
-              child: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
+              child: const Icon(Icons.arrow_back_ios_rounded,
+                  color: Colors.white, size: 18),
             ),
           ),
         ],
@@ -267,7 +288,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             color: const Color(0xFF07121E),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: const Color(0xFF00B4FF).withValues(alpha: 0.4),
+              color: const Color(0xFF00B4FF).withOpacity(0.4),
             ),
           ),
           padding: const EdgeInsets.all(4),
@@ -291,10 +312,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF00B4FF).withValues(alpha: 0.15) : Colors.transparent,
+            color: selected
+                ? const Color(0xFF00B4FF).withOpacity(0.15)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
             border: selected
-                ? Border.all(color: const Color(0xFF00B4FF).withValues(alpha: 0.5))
+                ? Border.all(
+                    color: const Color(0xFF00B4FF).withOpacity(0.5))
                 : null,
           ),
           child: Row(
@@ -302,16 +326,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               Icon(
                 icon,
-                color: selected ? const Color(0xFF00B4FF) : Colors.white.withValues(alpha: 0.35),
+                color: selected
+                    ? const Color(0xFF00B4FF)
+                    : Colors.white.withOpacity(0.35),
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? const Color(0xFF00B4FF) : Colors.white.withValues(alpha: 0.35),
+                  color: selected
+                      ? const Color(0xFF00B4FF)
+                      : Colors.white.withOpacity(0.35),
                   fontSize: 14,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                  fontWeight:
+                      selected ? FontWeight.w700 : FontWeight.w400,
                 ),
               ),
             ],

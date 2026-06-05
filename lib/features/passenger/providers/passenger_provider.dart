@@ -53,7 +53,7 @@ class PassengerProvider extends ChangeNotifier {
         await Geolocator.requestPermission();
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        desiredAccuracy: LocationAccuracy.high,
       );
       _userLocation = LatLng(pos.latitude, pos.longitude);
       notifyListeners();

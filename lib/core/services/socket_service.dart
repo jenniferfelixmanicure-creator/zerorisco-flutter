@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../constants/api_constants.dart';
 
@@ -8,13 +7,11 @@ class SocketService {
   io.Socket? _socket;
   final Map<String, List<SocketEventHandler>> _listeners = {};
   bool _connected = false;
-  String? _token;
 
   bool get isConnected => _connected;
 
   void connect(String token) {
     if (_socket != null && _connected) return;
-    _token = token;
 
     _socket = io.io(
       ApiConstants.socketUrl,
@@ -43,7 +40,7 @@ class SocketService {
     });
 
     _socket!.onAny((event, data) {
-      _notifyListeners(event as String, data);
+      _notifyListeners(event.toString(), data);
     });
 
     _socket!.connect();

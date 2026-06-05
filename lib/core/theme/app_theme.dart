@@ -100,7 +100,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
-          navigationBarColor: AppColors.background,
+          systemNavigationBarColor: AppColors.background,
         ),
         titleTextStyle: TextStyle(
           color: AppColors.textPrimary,
@@ -108,7 +108,7 @@ class AppTheme {
           fontWeight: FontWeight.w600,
         ),
       ),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         color: AppColors.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -189,7 +189,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.card,
-        selectedColor: AppColors.primary.withValues(alpha: 0.2),
+        selectedColor: AppColors.primary.withOpacity(0.2),
         labelStyle: const TextStyle(
           color: AppColors.textPrimary,
           fontSize: 13,
