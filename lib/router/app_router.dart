@@ -12,50 +12,57 @@ import '../features/passenger/screens/passenger_profile_screen.dart';
 import '../features/driver/screens/driver_home_screen.dart';
 import '../features/driver/screens/driver_earnings_screen.dart';
 import '../features/driver/screens/driver_profile_screen.dart';
+import '../features/driver/screens/driver_documents_screen.dart';
 import '../features/admin/screens/admin_home_screen.dart';
 import '../features/admin/screens/admin_drivers_screen.dart';
 import '../features/admin/screens/admin_users_screen.dart';
 import '../features/admin/screens/admin_rides_screen.dart';
 import '../features/admin/screens/admin_profile_screen.dart';
+import '../features/shared/screens/notifications_screen.dart';
 
 GoRouter buildRouter(BuildContext context) {
   final auth = Provider.of<AuthProvider>(context, listen: false);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: auth,
     redirect: (context, state) {
       final path = state.matchedLocation;
+
       switch (auth.state) {
         case AuthState.loading:
+          // Fica no splash enquanto carrega
+          if (path == '/splash') return null;
           return '/splash';
+
         case AuthState.unauthenticated:
-          if (path == '/splash' || path == '/login' || path == '/register') return null;
+          // CORRIGIDO: splash não é exceção aqui — redireciona para login
+          if (path == '/login' || path == '/register') return null;
           return '/login';
+
         case AuthState.modeSelection:
+          if (path == '/mode') return null;
           return '/mode';
+
         case AuthState.admin:
-          if (path.startsWith('/admin')) return null;
+          if (path.startsWith('/admin') || path == '/notifications') return null;
           return '/admin';
+
         case AuthState.passenger:
-          if (path.startsWith('/passenger')) return null;
+          if (path.startsWith('/passenger') || path == '/notifications') return null;
           return '/passenger';
+
         case AuthState.driver:
-          if (path.startsWith('/driver')) return null;
+          if (path.startsWith('/driver') || path == '/notifications') return null;
           return '/driver';
       }
     },
-    refreshListenable: auth,
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
-      GoRoute(
-        path: '/login',
-        builder: (_, __) => const LoginScreen(),
-        routes: [
-          GoRoute(path: 'register', builder: (_, __) => const RegisterScreen()),
-        ],
-      ),
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/mode', builder: (_, __) => const ModeSelectionScreen()),
+      GoRoute(path: '/notifications', builder: (_, __) => const NotificationsScreen()),
 
       // Admin
       GoRoute(path: '/admin', builder: (_, __) => const AdminHomeScreen()),
@@ -65,47 +72,24 @@ GoRouter buildRouter(BuildContext context) {
       GoRoute(path: '/admin/profile', builder: (_, __) => const AdminProfileScreen()),
 
       // Passageiro
-      ShellRoute(
-        builder: (context, state, child) => _PassengerShell(child: child),
-        routes: [
-          GoRoute(path: '/passenger', builder: (_, __) => const PassengerHomeScreen()),
-          GoRoute(path: '/passenger/history', builder: (_, __) => const PassengerHistoryScreen()),
-          GoRoute(path: '/passenger/profile', builder: (_, __) => const PassengerProfileScreen()),
-        ],
-      ),
+      GoRoute(path: '/passenger', builder: (_, __) => const PassengerHomeScreen()),
+      GoRoute(path: '/passenger/history', builder: (_, __) => const PassengerHistoryScreen()),
+      GoRoute(path: '/passenger/profile', builder: (_, __) => const PassengerProfileScreen()),
 
       // Motorista
-      ShellRoute(
-        builder: (context, state, child) => _DriverShell(child: child),
-        routes: [
-          GoRoute(path: '/driver', builder: (_, __) => const DriverHomeScreen()),
-          GoRoute(path: '/driver/earnings', builder: (_, __) => const DriverEarningsScreen()),
-          GoRoute(path: '/driver/profile', builder: (_, __) => const DriverProfileScreen()),
-        ],
-      ),
+      GoRoute(path: '/driver', builder: (_, __) => const DriverHomeScreen()),
+      GoRoute(path: '/driver/earnings', builder: (_, __) => const DriverEarningsScreen()),
+      GoRoute(path: '/driver/profile', builder: (_, __) => const DriverProfileScreen()),
+      GoRoute(path: '/driver/documents', builder: (_, __) => const DriverDocumentsScreen()),
     ],
     errorBuilder: (_, state) => Scaffold(
       backgroundColor: const Color(0xFF080C14),
       body: Center(
         child: Text(
-          'Página não encontrada: ${state.error}',
+          'Página não encontrada',
           style: const TextStyle(color: Colors.white),
         ),
       ),
     ),
   );
-}
-
-class _PassengerShell extends StatelessWidget {
-  final Widget child;
-  const _PassengerShell({required this.child});
-  @override
-  Widget build(BuildContext context) => child;
-}
-
-class _DriverShell extends StatelessWidget {
-  final Widget child;
-  const _DriverShell({required this.child});
-  @override
-  Widget build(BuildContext context) => child;
 }
