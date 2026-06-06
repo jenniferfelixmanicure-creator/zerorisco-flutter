@@ -1,13 +1,7 @@
 class ApiConstants {
-  static const String supabaseUrl =
-      'https://ttwbuvnbyxqifztofunx.supabase.co';
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
-      '.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0d2J1dm5ieXhxaWZ6dG9mdW54'
-      'Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MTU3OTMsImV4cCI6MjA5NjA5'
-      'MTc5M30.91eH-1zVq1RWSsRaAD_t8tZ1ltC815Ni1Re0nZA6iIw';
+  static const String baseUrl =
+      'https://35916813-9406-48c9-9f9a-7b8d7186c2f5-00-2el52dy6a2wi8.picard.replit.dev';
 
-  static const String baseUrl = 'https://saquadrive.onrender.com';
   static const String apiPath = '/api';
   static String get apiBase => '$baseUrl$apiPath';
   static String get socketUrl => baseUrl;
