@@ -80,6 +80,18 @@ class PassengerProfileScreen extends StatelessWidget {
               icon: const Icon(Icons.swap_horiz_rounded, size: 18),
               label: const Text('Trocar para modo motorista'),
             ),
+            if (auth.isAdmin) ...[
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => auth.backToAdmin(),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: BorderSide(color: AppColors.primary.withOpacity(0.5)),
+                ),
+                icon: const Icon(Icons.admin_panel_settings_rounded, size: 18),
+                label: const Text('Voltar ao painel admin'),
+              ),
+            ],
           ],
         ),
       ),
