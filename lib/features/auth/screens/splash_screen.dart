@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/permission_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/auth_provider.dart';
 
@@ -21,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -38,8 +40,15 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<AuthProvider>().initialize();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // 1. Solicita permissões primeiro (localização, câmera, microfone)
+      if (mounted) {
+        await PermissionService.requestAll(context);
+      }
+      // 2. Inicializa sessão do usuário
+      if (mounted) {
+        await context.read<AuthProvider>().initialize();
+      }
     });
   }
 
@@ -63,62 +72,55 @@ class _SplashScreenState extends State<SplashScreen>
               children: [
                 AnimatedBuilder(
                   animation: _rotateController,
-                  builder: (_, __) {
-                    return Transform.rotate(
-                      angle: _rotateController.value * 2 * math.pi,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: SweepGradient(
-                            colors: [
-                              AppColors.primary.withOpacity(0),
-                              AppColors.primary.withOpacity(0.3),
-                              AppColors.primary,
-                              AppColors.primary.withOpacity(0.3),
-                              AppColors.primary.withOpacity(0),
-                            ],
-                          ),
+                  builder: (_, __) => Transform.rotate(
+                    angle: _rotateController.value * 2 * math.pi,
+                    child: Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: SweepGradient(
+                          colors: [
+                            AppColors.primary.withOpacity(0),
+                            AppColors.primary.withOpacity(0.3),
+                            AppColors.primary,
+                            AppColors.primary.withOpacity(0.3),
+                            AppColors.primary.withOpacity(0),
+                          ],
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
                 AnimatedBuilder(
                   animation: _pulseController,
-                  builder: (_, __) {
-                    return Transform.scale(
-                      scale: _scaleAnim.value,
-                      child: Opacity(
-                        opacity: _opacityAnim.value,
-                        child: Container(
-                          width: 96,
-                          height: 96,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary.withOpacity(0.15),
-                            border: Border.all(
-                              color: AppColors.primary,
-                              width: 2,
+                  builder: (_, __) => Transform.scale(
+                    scale: _scaleAnim.value,
+                    child: Opacity(
+                      opacity: _opacityAnim.value,
+                      child: Container(
+                        width: 96,
+                        height: 96,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary.withOpacity(0.15),
+                          border: Border.all(color: AppColors.primary, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withOpacity(0.4),
+                              blurRadius: 24,
+                              spreadRadius: 4,
                             ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.primary.withOpacity(0.4),
-                                blurRadius: 24,
-                                spreadRadius: 4,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.shield_rounded,
-                            color: AppColors.primary,
-                            size: 44,
-                          ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.shield_rounded,
+                          color: AppColors.primary,
+                          size: 44,
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -135,10 +137,7 @@ class _SplashScreenState extends State<SplashScreen>
             const SizedBox(height: 8),
             Text(
               'Transporte seguro em Saquarema',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             const SizedBox(height: 48),
             SizedBox(
