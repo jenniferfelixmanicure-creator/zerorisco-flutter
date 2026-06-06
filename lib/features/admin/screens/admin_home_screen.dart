@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -25,6 +26,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   }
 
   Future<void> _loadStats() async {
+    if (!mounted) return;
+    setState(() => _loading = true);
     final token = context.read<AuthProvider>().token;
     try {
       final res = await http.get(
@@ -36,6 +39,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           _stats = jsonDecode(res.body) as Map<String, dynamic>;
           _loading = false;
         });
+      } else {
+        if (mounted) setState(() => _loading = false);
       }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
@@ -45,7 +50,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final notifService = context.watch<NotificationService>();
     final user = auth.user;
+    final pendingDrivers = (_stats?['pendingDrivers'] ?? 0) as int;
+    final unread = notifService.unreadCount;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -72,13 +80,35 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            const Text('Painel ZeroRisco'),
+            const Text('Painel ZeroRisco', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
           ],
         ),
         actions: [
           IconButton(
             onPressed: _loadStats,
-            icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+            icon: Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+          ),
+          // Badge de notificações
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () => context.push('/notifications'),
+                icon: const Icon(Icons.notifications_rounded, color: Colors.white),
+              ),
+              if (unread > 0)
+                Positioned(
+                  top: 8, right: 8,
+                  child: Container(
+                    width: 16, height: 16,
+                    decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                    child: Text(
+                      unread > 9 ? '9+' : '$unread',
+                      style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
           IconButton(
             onPressed: () => context.push('/admin/profile'),
@@ -97,11 +127,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 children: [
                   Text(
                     'Olá, ${user?.name.split(' ').first ?? 'Admin'} 👋',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -121,8 +147,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     children: [
                       _statCard('Usuários', '${_stats?['totalUsers'] ?? 0}', Icons.people_rounded, AppColors.primary),
                       _statCard('Motoristas', '${_stats?['totalDrivers'] ?? 0}', Icons.drive_eta_rounded, AppColors.accent),
-                      _statCard('Pendentes', '${_stats?['pendingDrivers'] ?? 0}', Icons.pending_rounded, AppColors.warning),
-                      _statCard('Corridas hoje', '${_stats?['activeRides'] ?? 0}', Icons.route_rounded, AppColors.success),
+                      _statCard('Pendentes', '$pendingDrivers', Icons.pending_rounded, AppColors.warning),
+                      _statCard('Corridas ativas', '${_stats?['activeRides'] ?? 0}', Icons.route_rounded, AppColors.success),
                     ],
                   ),
                   const SizedBox(height: 28),
@@ -132,8 +158,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     context,
                     icon: Icons.person_search_rounded,
                     label: 'Motoristas',
-                    subtitle: '${_stats?['pendingDrivers'] ?? 0} aguardando aprovação',
-                    badge: (_stats?['pendingDrivers'] ?? 0) > 0,
+                    subtitle: pendingDrivers > 0
+                        ? '$pendingDrivers aguardando aprovação'
+                        : 'Gerenciar motoristas',
+                    badge: pendingDrivers > 0 ? pendingDrivers : null,
                     onTap: () => context.push('/admin/drivers'),
                   ),
                   _actionTile(
@@ -150,6 +178,18 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                     subtitle: '${_stats?['totalRides'] ?? 0} no total',
                     onTap: () => context.push('/admin/rides'),
                   ),
+                  if (unread > 0) ...[
+                    const SizedBox(height: 8),
+                    _actionTile(
+                      context,
+                      icon: Icons.notifications_active_rounded,
+                      label: 'Notificações',
+                      subtitle: '$unread novas notificações',
+                      badge: unread,
+                      color: AppColors.error,
+                      onTap: () => context.push('/notifications'),
+                    ),
+                  ],
                 ],
               ),
       ),
@@ -182,14 +222,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                value,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              Text(value, style: TextStyle(color: color, fontSize: 26, fontWeight: FontWeight.w800)),
               Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
             ],
           ),
@@ -204,8 +237,10 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     required String label,
     required String subtitle,
     required VoidCallback onTap,
-    bool badge = false,
+    int? badge,
+    Color? color,
   }) {
+    final c = color ?? AppColors.primary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -214,18 +249,17 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         decoration: BoxDecoration(
           color: AppColors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
+          border: Border.all(color: badge != null ? c.withOpacity(0.3) : AppColors.border),
         ),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 44, height: 44,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.12),
+                color: c.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppColors.primary, size: 22),
+              child: Icon(icon, color: c, size: 22),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -238,14 +272,20 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                 ],
               ),
             ),
-            if (badge)
+            if (badge != null)
               Container(
-                width: 10,
-                height: 10,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 margin: const EdgeInsets.only(right: 8),
-                decoration: const BoxDecoration(color: AppColors.warning, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: c,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '$badge',
+                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+                ),
               ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],
         ),
       ),
