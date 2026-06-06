@@ -1,41 +1,53 @@
 import 'dart:convert';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/api_constants.dart';
 import '../models/user_model.dart';
 
 class AuthService {
-  final _supabase = Supabase.instance.client;
   static const _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
+  static const _tokenKey = 'zerorisco_token';
   static const _modeKey = 'zerorisco_mode';
 
   Future<String?> getMode() => _storage.read(key: _modeKey);
   Future<void> saveMode(String mode) => _storage.write(key: _modeKey, value: mode);
   Future<void> clearMode() => _storage.delete(key: _modeKey);
 
-  Session? get currentSession => _supabase.auth.currentSession;
-  String? get currentToken => _supabase.auth.currentSession?.accessToken;
+  Future<String?> getSavedToken() => _storage.read(key: _tokenKey);
+  Future<void> _saveToken(String token) => _storage.write(key: _tokenKey, value: token);
+  Future<void> _clearToken() => _storage.delete(key: _tokenKey);
 
-  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
+  String? _currentToken;
+  String? get currentToken => _currentToken;
+
+  Future<void> restoreSession() async {
+    _currentToken = await getSavedToken();
+  }
 
   Future<({UserModel user, String token})> login(
     String email,
     String password,
   ) async {
-    final res = await _supabase.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    final response = await http.post(
+      Uri.parse('${ApiConstants.apiBase}/auth/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    ).timeout(ApiConstants.connectTimeout);
 
-    if (res.session == null) {
-      throw AuthException('Credenciais inválidas. Verifique e-mail e senha.');
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode != 200) {
+      throw AuthException(body['message'] as String? ?? 'Erro ao fazer login.');
     }
 
-    final token = res.session!.accessToken;
-    final user = await _fetchOrCreateProfile(token, res.user!);
+    final token = body['token'] as String;
+    final user = UserModel.fromJson(body['user'] as Map<String, dynamic>);
+
+    _currentToken = token;
+    await _saveToken(token);
+
     return (user: user, token: token);
   }
 
@@ -46,127 +58,59 @@ class AuthService {
     String password,
     String role,
   ) async {
-    final res = await _supabase.auth.signUp(
-      email: email,
-      password: password,
-      data: {
+    final response = await http.post(
+      Uri.parse('${ApiConstants.apiBase}/auth/register'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
         'name': name,
+        'email': email,
         'phone': phone,
+        'password': password,
         'role': role,
-      },
-    );
+      }),
+    ).timeout(ApiConstants.connectTimeout);
 
-    if (res.session == null && res.user == null) {
-      throw AuthException('Erro ao criar conta. Tente novamente.');
+    final body = jsonDecode(response.body) as Map<String, dynamic>;
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw AuthException(body['message'] as String? ?? 'Erro ao criar conta.');
     }
 
-    final token = res.session?.accessToken ?? '';
-    final user = await _createBackendProfile(
-      token: token,
-      supabaseUser: res.user!,
-      name: name,
-      phone: phone,
-      role: role,
-    );
+    final token = body['token'] as String;
+    final user = UserModel.fromJson(body['user'] as Map<String, dynamic>);
+
+    _currentToken = token;
+    await _saveToken(token);
+
     return (user: user, token: token);
   }
 
-  Future<UserModel> _fetchOrCreateProfile(String token, User supabaseUser) async {
-    try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.apiBase}/users/me'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(ApiConstants.connectTimeout);
-
-      if (response.statusCode == 200) {
-        return UserModel.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>,
-        );
-      }
-
-      if (response.statusCode == 404) {
-        final meta = supabaseUser.userMetadata ?? {};
-        return await _createBackendProfile(
-          token: token,
-          supabaseUser: supabaseUser,
-          name: meta['name'] as String? ?? supabaseUser.email!.split('@').first,
-          phone: meta['phone'] as String? ?? '',
-          role: meta['role'] as String? ?? 'passenger',
-        );
-      }
-    } catch (_) {}
-
-    final meta = supabaseUser.userMetadata ?? {};
-    return UserModel(
-      id: supabaseUser.id,
-      name: meta['name'] as String? ?? supabaseUser.email!.split('@').first,
-      email: supabaseUser.email ?? '',
-      phone: meta['phone'] as String? ?? '',
-      role: meta['role'] as String? ?? 'passenger',
-    );
-  }
-
-  Future<UserModel> _createBackendProfile({
-    required String token,
-    required User supabaseUser,
-    required String name,
-    required String phone,
-    required String role,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.apiBase}/users/sync'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'supabaseId': supabaseUser.id,
-          'email': supabaseUser.email,
-          'name': name,
-          'phone': phone,
-          'role': role,
-        }),
-      ).timeout(ApiConstants.connectTimeout);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return UserModel.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>,
-        );
-      }
-    } catch (_) {}
-
-    return UserModel(
-      id: supabaseUser.id,
-      name: name,
-      email: supabaseUser.email ?? '',
-      phone: phone,
-      role: role,
-    );
-  }
-
   Future<UserModel?> fetchProfile() async {
-    final token = currentToken;
+    final token = _currentToken ?? await getSavedToken();
     if (token == null) return null;
+
     try {
       final response = await http.get(
         Uri.parse('${ApiConstants.apiBase}/users/me'),
-        headers: {'Authorization': 'Bearer $token'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
       ).timeout(const Duration(seconds: 10));
+
       if (response.statusCode == 200) {
         return UserModel.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>,
         );
       }
     } catch (_) {}
+
     return null;
   }
 
   Future<void> logout() async {
-    await _supabase.auth.signOut();
+    _currentToken = null;
+    await _clearToken();
     await clearMode();
   }
 }
