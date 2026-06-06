@@ -4,7 +4,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/services/socket_service.dart';
 import '../../../core/services/api_service.dart';
 
-enum AuthState { loading, unauthenticated, modeSelection, passenger, driver }
+enum AuthState { loading, unauthenticated, modeSelection, passenger, driver, admin }
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService;
@@ -32,25 +32,26 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isPassenger => _mode == 'passenger';
   bool get isDriver => _mode == 'driver';
+  bool get isAdmin => _user?.role == 'admin';
 
   Future<void> initialize() async {
     try {
-      final session = _authService.currentSession;
-      if (session == null) {
+      await _authService.restoreSession();
+      final savedToken = _authService.currentToken;
+      if (savedToken == null) {
         _state = AuthState.unauthenticated;
         notifyListeners();
         return;
       }
 
-      _token = session.accessToken;
+      _token = savedToken;
       _apiService.setToken(_token);
 
-      // Timeout de 5 segundos para buscar o perfil, caso o Supabase demore a responder
       final user = await _authService.fetchProfile().timeout(
         const Duration(seconds: 5),
         onTimeout: () => throw Exception('Timeout ao carregar perfil'),
       );
-      
+
       if (user == null) {
         _state = AuthState.unauthenticated;
         notifyListeners();
@@ -60,9 +61,16 @@ class AuthProvider extends ChangeNotifier {
       _user = user;
       _socketService.connect(_token!);
 
-      final savedMode = await _authService.getMode();
-      _mode = savedMode;
-      _state = _resolveState(savedMode);
+      if (user.role == 'admin') {
+        final savedMode = await _authService.getMode();
+        _mode = savedMode;
+        _state = savedMode != null ? _resolveUserState(savedMode) : AuthState.admin;
+      } else {
+        final savedMode = await _authService.getMode();
+        _mode = savedMode;
+        _state = _resolveState(savedMode);
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint('Erro na inicialização: $e');
@@ -76,6 +84,10 @@ class AuthProvider extends ChangeNotifier {
     return mode == 'driver' ? AuthState.driver : AuthState.passenger;
   }
 
+  AuthState _resolveUserState(String mode) {
+    return mode == 'driver' ? AuthState.driver : AuthState.passenger;
+  }
+
   Future<void> login(String email, String password) async {
     _error = null;
     notifyListeners();
@@ -86,9 +98,16 @@ class AuthProvider extends ChangeNotifier {
       _apiService.setToken(_token);
       _socketService.connect(_token!);
 
-      final savedMode = await _authService.getMode();
-      _mode = savedMode;
-      _state = _resolveState(savedMode);
+      if (result.user.role == 'admin') {
+        _mode = null;
+        await _authService.clearMode();
+        _state = AuthState.admin;
+      } else {
+        final savedMode = await _authService.getMode();
+        _mode = savedMode;
+        _state = _resolveState(savedMode);
+      }
+
       notifyListeners();
     } on AuthException catch (e) {
       _error = e.message;
@@ -135,6 +154,13 @@ class AuthProvider extends ChangeNotifier {
     _mode = mode;
     await _authService.saveMode(mode);
     _state = mode == 'driver' ? AuthState.driver : AuthState.passenger;
+    notifyListeners();
+  }
+
+  Future<void> backToAdmin() async {
+    _mode = null;
+    await _authService.clearMode();
+    _state = AuthState.admin;
     notifyListeners();
   }
 
