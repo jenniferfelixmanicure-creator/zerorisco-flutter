@@ -12,6 +12,11 @@ import '../features/passenger/screens/passenger_profile_screen.dart';
 import '../features/driver/screens/driver_home_screen.dart';
 import '../features/driver/screens/driver_earnings_screen.dart';
 import '../features/driver/screens/driver_profile_screen.dart';
+import '../features/admin/screens/admin_home_screen.dart';
+import '../features/admin/screens/admin_drivers_screen.dart';
+import '../features/admin/screens/admin_users_screen.dart';
+import '../features/admin/screens/admin_rides_screen.dart';
+import '../features/admin/screens/admin_profile_screen.dart';
 
 GoRouter buildRouter(BuildContext context) {
   final auth = Provider.of<AuthProvider>(context, listen: false);
@@ -24,12 +29,13 @@ GoRouter buildRouter(BuildContext context) {
         case AuthState.loading:
           return '/splash';
         case AuthState.unauthenticated:
-          if (path == '/splash' || path == '/login' || path == '/register') {
-            return null;
-          }
+          if (path == '/splash' || path == '/login' || path == '/register') return null;
           return '/login';
         case AuthState.modeSelection:
           return '/mode';
+        case AuthState.admin:
+          if (path.startsWith('/admin')) return null;
+          return '/admin';
         case AuthState.passenger:
           if (path.startsWith('/passenger')) return null;
           return '/passenger';
@@ -40,60 +46,41 @@ GoRouter buildRouter(BuildContext context) {
     },
     refreshListenable: auth,
     routes: [
-      GoRoute(
-        path: '/splash',
-        builder: (_, __) => const SplashScreen(),
-      ),
+      GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(
         path: '/login',
         builder: (_, __) => const LoginScreen(),
         routes: [
-          GoRoute(
-            path: 'register',
-            builder: (_, __) => const RegisterScreen(),
-          ),
+          GoRoute(path: 'register', builder: (_, __) => const RegisterScreen()),
         ],
       ),
-      GoRoute(
-        path: '/register',
-        builder: (_, __) => const RegisterScreen(),
-      ),
-      GoRoute(
-        path: '/mode',
-        builder: (_, __) => const ModeSelectionScreen(),
-      ),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: '/mode', builder: (_, __) => const ModeSelectionScreen()),
+
+      // Admin
+      GoRoute(path: '/admin', builder: (_, __) => const AdminHomeScreen()),
+      GoRoute(path: '/admin/drivers', builder: (_, __) => const AdminDriversScreen()),
+      GoRoute(path: '/admin/users', builder: (_, __) => const AdminUsersScreen()),
+      GoRoute(path: '/admin/rides', builder: (_, __) => const AdminRidesScreen()),
+      GoRoute(path: '/admin/profile', builder: (_, __) => const AdminProfileScreen()),
+
+      // Passageiro
       ShellRoute(
         builder: (context, state, child) => _PassengerShell(child: child),
         routes: [
-          GoRoute(
-            path: '/passenger',
-            builder: (_, __) => const PassengerHomeScreen(),
-          ),
-          GoRoute(
-            path: '/passenger/history',
-            builder: (_, __) => const PassengerHistoryScreen(),
-          ),
-          GoRoute(
-            path: '/passenger/profile',
-            builder: (_, __) => const PassengerProfileScreen(),
-          ),
+          GoRoute(path: '/passenger', builder: (_, __) => const PassengerHomeScreen()),
+          GoRoute(path: '/passenger/history', builder: (_, __) => const PassengerHistoryScreen()),
+          GoRoute(path: '/passenger/profile', builder: (_, __) => const PassengerProfileScreen()),
         ],
       ),
+
+      // Motorista
       ShellRoute(
         builder: (context, state, child) => _DriverShell(child: child),
         routes: [
-          GoRoute(
-            path: '/driver',
-            builder: (_, __) => const DriverHomeScreen(),
-          ),
-          GoRoute(
-            path: '/driver/earnings',
-            builder: (_, __) => const DriverEarningsScreen(),
-          ),
-          GoRoute(
-            path: '/driver/profile',
-            builder: (_, __) => const DriverProfileScreen(),
-          ),
+          GoRoute(path: '/driver', builder: (_, __) => const DriverHomeScreen()),
+          GoRoute(path: '/driver/earnings', builder: (_, __) => const DriverEarningsScreen()),
+          GoRoute(path: '/driver/profile', builder: (_, __) => const DriverProfileScreen()),
         ],
       ),
     ],
@@ -112,19 +99,13 @@ GoRouter buildRouter(BuildContext context) {
 class _PassengerShell extends StatelessWidget {
   final Widget child;
   const _PassengerShell({required this.child});
-
   @override
-  Widget build(BuildContext context) {
-    return child;
-  }
+  Widget build(BuildContext context) => child;
 }
 
 class _DriverShell extends StatelessWidget {
   final Widget child;
   const _DriverShell({required this.child});
-
   @override
-  Widget build(BuildContext context) {
-    return child;
-  }
+  Widget build(BuildContext context) => child;
 }
