@@ -22,9 +22,6 @@ dependencies:
   # Storage
   flutter_secure_storage: ^9.2.2
 
-  # Supabase (auth + banco)
-  supabase_flutter: ^2.6.0
-
   # Socket.io
   socket_io_client: ^2.0.3+1
 
