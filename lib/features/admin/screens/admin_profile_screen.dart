@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -10,17 +11,42 @@ class AdminProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final notifService = context.watch<NotificationService>();
     final user = auth.user;
+    final unread = notifService.unreadCount;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        title: const Text('Meu perfil'),
+        title: const Text('Meu perfil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () => context.push('/notifications'),
+                icon: const Icon(Icons.notifications_rounded, color: Colors.white),
+              ),
+              if (unread > 0)
+                Positioned(
+                  top: 8, right: 8,
+                  child: Container(
+                    width: 16, height: 16,
+                    decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                    child: Text(
+                      '$unread',
+                      style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w700),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -65,9 +91,7 @@ class AdminProfileScreen extends StatelessWidget {
               icon: Icons.person_rounded,
               label: 'Modo passageiro',
               subtitle: 'Solicitar corridas como passageiro',
-              onTap: () {
-                auth.setMode('passenger');
-              },
+              onTap: () => auth.setMode('passenger'),
             ),
             const SizedBox(height: 10),
             _modeButton(
@@ -75,15 +99,52 @@ class AdminProfileScreen extends StatelessWidget {
               icon: Icons.drive_eta_rounded,
               label: 'Modo motorista',
               subtitle: 'Receber e aceitar corridas',
-              onTap: () {
-                auth.setMode('driver');
-              },
+              onTap: () => auth.setMode('driver'),
             ),
+            if (unread > 0) ...[
+              const SizedBox(height: 24),
+              _sectionTitle('NOTIFICAÇÕES'),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () => context.push('/notifications'),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42, height: 42,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.error.withOpacity(0.15),
+                        ),
+                        child: Icon(Icons.notifications_active_rounded, color: AppColors.error, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          '$unread notificações não lidas',
+                          style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                    ],
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 32),
-            TextButton.icon(
-              onPressed: () => auth.logout(),
-              icon: const Icon(Icons.logout_rounded, color: AppColors.error, size: 18),
-              label: const Text('Sair da conta', style: TextStyle(color: AppColors.error)),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () => auth.logout(),
+                icon: const Icon(Icons.logout_rounded, color: AppColors.error, size: 18),
+                label: const Text('Sair da conta', style: TextStyle(color: AppColors.error)),
+              ),
             ),
           ],
         ),
@@ -94,22 +155,17 @@ class AdminProfileScreen extends StatelessWidget {
   Widget _buildAvatar(String name) {
     final initials = name.split(' ').take(2).map((n) => n.isNotEmpty ? n[0] : '').join().toUpperCase();
     return Container(
-      width: 90,
-      height: 90,
+      width: 90, height: 90,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
           colors: [AppColors.primaryDark, AppColors.primary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 20, spreadRadius: 2),
-        ],
+        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 20, spreadRadius: 2)],
       ),
       child: Center(
-        child: Text(initials,
-            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
+        child: Text(initials, style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -127,17 +183,15 @@ class AdminProfileScreen extends StatelessWidget {
         ),
       );
 
-  Widget _tile(IconData icon, String label, String value) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
+  Widget _tile(IconData icon, String label, String value) => Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(children: [
           Icon(icon, color: AppColors.primary, size: 20),
           const SizedBox(width: 14),
           Column(
@@ -147,10 +201,8 @@ class AdminProfileScreen extends StatelessWidget {
               Text(value, style: const TextStyle(color: Colors.white, fontSize: 15)),
             ],
           ),
-        ],
-      ),
-    );
-  }
+        ]),
+      );
 
   Widget _modeButton(
     BuildContext context, {
@@ -171,8 +223,7 @@ class AdminProfileScreen extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 42, height: 42,
               decoration: BoxDecoration(
                 color: AppColors.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
@@ -184,13 +235,12 @@ class AdminProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                  Text(label, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
                   Text(subtitle, style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],
         ),
       ),
