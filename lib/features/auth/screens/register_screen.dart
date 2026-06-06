@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/services/socket_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../shared/widgets/neon_widgets.dart';
 import '../providers/auth_provider.dart';
@@ -36,13 +37,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     FocusScope.of(context).unfocus();
     setState(() => _loading = true);
     try {
-      await context.read<AuthProvider>().register(
-            _nameCtrl.text.trim(),
-            _emailCtrl.text.trim(),
-            _phoneCtrl.text.trim(),
-            _passCtrl.text,
-            _role,
-          );
+      final auth = context.read<AuthProvider>();
+      await auth.register(
+        _nameCtrl.text.trim(),
+        _emailCtrl.text.trim(),
+        _phoneCtrl.text.trim(),
+        _passCtrl.text,
+        _role,
+      );
+
+      // Notifica admin via Socket.IO quando um motorista se cadastra
+      if (_role == 'driver' && mounted) {
+        final socket = context.read<SocketService>();
+        socket.emit('driver:registered', {'driverName': _nameCtrl.text.trim()});
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,8 +58,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             content: Text(e.toString()),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -136,12 +143,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 keyboardType: TextInputType.emailAddress,
                                 textInputAction: TextInputAction.next,
                                 validator: (v) {
-                                  if (v == null || v.isEmpty) {
-                                    return 'Informe o e-mail';
-                                  }
-                                  if (!RegExp(r'.+@.+\..+').hasMatch(v)) {
-                                    return 'E-mail inválido';
-                                  }
+                                  if (v == null || v.isEmpty) return 'Informe o e-mail';
+                                  if (!RegExp(r'.+@.+\..+').hasMatch(v)) return 'E-mail inválido';
                                   return null;
                                 },
                               ),
@@ -170,8 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 textInputAction: TextInputAction.done,
                                 onSubmitted: (_) => _submit(),
                                 suffixIcon: GestureDetector(
-                                  onTap: () =>
-                                      setState(() => _obscure = !_obscure),
+                                  onTap: () => setState(() => _obscure = !_obscure),
                                   child: Icon(
                                     _obscure
                                         ? Icons.visibility_outlined
@@ -181,12 +183,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.isEmpty) {
-                                    return 'Informe a senha';
-                                  }
-                                  if (v.length < 6) {
-                                    return 'Mínimo 6 caracteres';
-                                  }
+                                  if (v == null || v.isEmpty) return 'Informe a senha';
+                                  if (v.length < 6) return 'Mínimo 6 caracteres';
                                   return null;
                                 },
                               ),
@@ -252,12 +250,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               decoration: BoxDecoration(
                 color: const Color(0xFF07121E),
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: const Color(0xFF00B4FF).withOpacity(0.35),
-                ),
+                border: Border.all(color: const Color(0xFF00B4FF).withOpacity(0.35)),
               ),
-              child: const Icon(Icons.arrow_back_ios_rounded,
-                  color: Colors.white, size: 18),
+              child: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white, size: 18),
             ),
           ),
         ],
@@ -265,17 +260,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _label(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Color(0xFF00B4FF),
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 2,
-      ),
-    );
-  }
+  Widget _label(String text) => Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xFF00B4FF),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2,
+        ),
+      );
 
   Widget _buildRoleSelector() {
     return Column(
@@ -287,9 +280,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF07121E),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: const Color(0xFF00B4FF).withOpacity(0.4),
-            ),
+            border: Border.all(color: const Color(0xFF00B4FF).withOpacity(0.4)),
           ),
           padding: const EdgeInsets.all(4),
           child: Row(
@@ -312,13 +303,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selected
-                ? const Color(0xFF00B4FF).withOpacity(0.15)
-                : Colors.transparent,
+            color: selected ? const Color(0xFF00B4FF).withOpacity(0.15) : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
             border: selected
-                ? Border.all(
-                    color: const Color(0xFF00B4FF).withOpacity(0.5))
+                ? Border.all(color: const Color(0xFF00B4FF).withOpacity(0.5))
                 : null,
           ),
           child: Row(
@@ -326,21 +314,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               Icon(
                 icon,
-                color: selected
-                    ? const Color(0xFF00B4FF)
-                    : Colors.white.withOpacity(0.35),
+                color: selected ? const Color(0xFF00B4FF) : Colors.white.withOpacity(0.35),
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
-                  color: selected
-                      ? const Color(0xFF00B4FF)
-                      : Colors.white.withOpacity(0.35),
+                  color: selected ? const Color(0xFF00B4FF) : Colors.white.withOpacity(0.35),
                   fontSize: 14,
-                  fontWeight:
-                      selected ? FontWeight.w700 : FontWeight.w400,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                 ),
               ),
             ],
